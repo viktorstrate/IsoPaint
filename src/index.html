@@ -1,0 +1,23 @@
+<html>
+<head>
+    <link rel="stylesheet" href="style.css" media="screen">
+    <script type="application/javascript" src="script.js"></script>
+    <script type="application/javascript" src="jscolor/jscolor.js"></script>
+</head>
+<body onload="onBodyLoad();">
+    
+    <div class="rightToolbarContainer">
+        <input class="color" style="display: none; right: 0px;position: absolute;" id="myColor" onchange="iso.colorChange(this.color)">
+        
+        <div id="usedColors">
+        </div>
+        
+        <button onclick="iso.toggleGrid();">Toggle Grid</button>
+    </div>
+    
+    <div class="canvasContainer">
+        <canvas id="board" width="700" height="700" style="background-color: #1e1e1e;"></canvas>
+    </div>
+    
+</body>
+</html>
