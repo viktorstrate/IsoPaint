@@ -22,7 +22,9 @@ var iso = {
     ctx: null,
 
     GRID_WIDTH: 40,
-    GRID_HEIGHT: 40,
+    GRID_HEIGHT: 60,
+    
+    RATIO: 0.5,
 
     // The width of the triangles in pixels
     TILE_SIZE: 20,
@@ -32,7 +34,8 @@ var iso = {
     // Tools
     tools: {
         PENCIL: 0,
-        PAINT_BUCKET: 1
+        PAINT_BUCKET: 1,
+        EYE_DROPPER: 2
     },
     currentTool: 0,
 
@@ -65,8 +68,13 @@ var iso = {
         // Event listeners
         iso.canvas.addEventListener('mousemove', function(evt) {
             iso.updateMousePosition(iso.canvas, evt);
-            if(iso.currentTool == iso.tools.PENCIL){
-                if(iso.mouseDown) iso.paintTriangle();
+            if(iso.mouseDown){
+                if(iso.currentTool == iso.tools.PENCIL){
+                    iso.paintTriangle();
+                }
+                if(iso.currentTool == iso.tools.EYE_DROPPER){
+                    iso.eyeDrop();
+                }
             }
         }, false);
 
@@ -74,6 +82,9 @@ var iso = {
             iso.mouseDown = true;
             if(iso.currentTool == iso.tools.PENCIL){
                 iso.paintTriangle();
+            }
+            if(iso.currentTool == iso.tools.EYE_DROPPER){
+                iso.eyeDrop();
             }
         });
 
@@ -101,12 +112,13 @@ var iso = {
     },
 
     render: function() {
-
+        
         // The triangle the mouse is hovering over
         iso.hoverTriangle = false;
         
         // temporary variables for optimization
         ctx = iso.ctx;
+        
         TILE_SIZE = iso.TILE_SIZE;
         mouseX = iso.mouseX;
         mouseY = iso.mouseY;
@@ -126,18 +138,18 @@ var iso = {
                 if(y%2==0){
                     if(x%2==0){
                         startPosX = x*TILE_SIZE;
-                        startPosY = TILE_SIZE*0.6+y*TILE_SIZE*0.6;
+                        startPosY = TILE_SIZE*iso.RATIO+y*TILE_SIZE*iso.RATIO;
                     } else {
                         startPosX = x*TILE_SIZE;
-                        startPosY = 0+y*TILE_SIZE*0.6;
+                        startPosY = 0+y*TILE_SIZE*iso.RATIO;
                     }
                 } else {
                     if(x%2==0){
                         startPosX = x*TILE_SIZE+TILE_SIZE;
-                        startPosY = TILE_SIZE*0.6+y*TILE_SIZE*0.6;
+                        startPosY = TILE_SIZE*iso.RATIO+y*TILE_SIZE*iso.RATIO;
                     } else {
                         startPosX = x*TILE_SIZE+TILE_SIZE;
-                        startPosY = 0+y*TILE_SIZE*0.6;
+                        startPosY = 0+y*TILE_SIZE*iso.RATIO;
                     }
                 }
 
@@ -145,15 +157,15 @@ var iso = {
                 if(x%2==0){
 
                     path.moveTo(startPosX,startPosY);
-                    path.lineTo(startPosX+TILE_SIZE,startPosY-TILE_SIZE*0.6);
-                    path.lineTo(startPosX+TILE_SIZE,startPosY+TILE_SIZE*0.6);
+                    path.lineTo(startPosX+TILE_SIZE,startPosY-TILE_SIZE*iso.RATIO);
+                    path.lineTo(startPosX+TILE_SIZE,startPosY+TILE_SIZE*iso.RATIO);
                     path.lineTo(startPosX,startPosY);
 
                     // Tests for mouse hover over this triangle
                     if(iso.hoverTriangle == false &&
                        triangleInPoint({x: iso.mouseX, y: iso.mouseY}, {x: startPosX, y: startPosY},
-                                       {x: startPosX+TILE_SIZE, y: startPosY-TILE_SIZE*0.6},
-                                       {x: startPosX+TILE_SIZE, y: startPosY+TILE_SIZE*0.6})){
+                                       {x: startPosX+TILE_SIZE, y: startPosY-TILE_SIZE*iso.RATIO},
+                                       {x: startPosX+TILE_SIZE, y: startPosY+TILE_SIZE*iso.RATIO})){
 
                         ctx.fillStyle = iso.currentColor;
                         iso.hoverTriangle = {x: x, y: y};
@@ -163,15 +175,15 @@ var iso = {
                 } else {
 
                     path.moveTo(startPosX,startPosY);
-                    path.lineTo(startPosX+TILE_SIZE, startPosY+TILE_SIZE*0.6);
-                    path.lineTo(startPosX,startPosY+TILE_SIZE*0.6+TILE_SIZE*0.6);
-                    path.lineTo(startPosX,startPosY+TILE_SIZE*0.6);
+                    path.lineTo(startPosX+TILE_SIZE, startPosY+TILE_SIZE*iso.RATIO);
+                    path.lineTo(startPosX,startPosY+TILE_SIZE*iso.RATIO+TILE_SIZE*iso.RATIO);
+                    path.lineTo(startPosX,startPosY+TILE_SIZE*iso.RATIO);
 
                     // Tests for mouse hover over this triangle
                     if(iso.hoverTriangle == false &&
                        triangleInPoint({x: mouseX, y: mouseY}, {x: startPosX, y: startPosY},
-                                       {x: startPosX+TILE_SIZE, y: startPosY+TILE_SIZE*0.6},
-                                       {x: startPosX, y: startPosY+TILE_SIZE*0.6+TILE_SIZE*0.6})){
+                                       {x: startPosX+TILE_SIZE, y: startPosY+TILE_SIZE*iso.RATIO},
+                                       {x: startPosX, y: startPosY+TILE_SIZE*iso.RATIO+TILE_SIZE*iso.RATIO})){
 
                         ctx.fillStyle = iso.currentColor;
                         iso.hoverTriangle = {x: x, y: y};
@@ -344,6 +356,11 @@ var iso = {
         
         iso.updatelastUsedColors();
         
+    },
+    
+    eyeDrop: function(){
+        iso.setCurrentColor(iso.colors[iso.hoverTriangle.x][iso.hoverTriangle.y]);
+        iso.render();
     }
 }
 
