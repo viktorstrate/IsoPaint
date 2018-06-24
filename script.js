@@ -23,14 +23,14 @@ var iso = {
 
     GRID_WIDTH: 40,
     GRID_HEIGHT: 60,
-    
+
     RATIO: 0.5,
 
     // The width of the triangles in pixels
     TILE_SIZE: 20,
 
     showGrid: true,
-    
+
     // Tools
     tools: {
         PENCIL: 0,
@@ -40,20 +40,20 @@ var iso = {
     currentTool: 0,
 
     currentColor: "",
-    // A multidimentional array of all the colors of the triangles
+    // A multidimensional array of all the colors of the triangles
     colors: Array(),
     // An array of the last used colors shown under the color picker
     lastUsedColors: Array(),
-    
+
     // DOM ELEMENTS
     usedColors: null,
     colorPicker: null,
 
     init: function(){
-        
+
         iso.usedColors = document.getElementById('usedColors');
         iso.colorPicker = document.getElementById('myColor');
-        
+
         // setup grid color array
         for(var x = 0; x < iso.GRID_WIDTH; x++){
             iso.colors[x] = Array();
@@ -61,7 +61,7 @@ var iso = {
                 iso.colors[x][y] = "#ffffff";
             }
         }
-        
+
         iso.canvas = document.getElementById("board");
         iso.ctx = iso.canvas.getContext('2d');
 
@@ -94,44 +94,44 @@ var iso = {
                 iso.fillColor(iso.currentColor, iso.hoverTriangle.x, iso.hoverTriangle.y);
             }
         });
-        
+
         window.addEventListener('resize', function(e){
             iso.resize(window.innerWidth-301, window.innerHeight);
         }, false);
 
         // Set resize the canvas to fill the window
         iso.resize(window.innerWidth-301, window.innerHeight);
-        
+
         iso.render();
-        
+
     },
-    
+
     resize: function(width, height){
         iso.canvas.width = width;
         iso.canvas.height = height;
     },
 
     render: function() {
-        
+
         // The triangle the mouse is hovering over
         iso.hoverTriangle = false;
-        
+
         // temporary variables for optimization
         ctx = iso.ctx;
-        
+
         TILE_SIZE = iso.TILE_SIZE;
         mouseX = iso.mouseX;
         mouseY = iso.mouseY;
-        
+
         for(var y = 0; y < iso.GRID_HEIGHT; y++){
             for(var x = 0; x < iso.GRID_WIDTH; x++){
 
                 // Set the fillstyle color to be the color of the given triangle
                 iso.ctx.fillStyle = iso.colors[x][y];
-                
+
                 var path = new Path2D();
 
-                // Start posistion of the triangle to draw
+                // Start position of the triangle to draw
                 var startPosX, startPosY;
 
                 // sets the start position
@@ -170,7 +170,7 @@ var iso = {
                         ctx.fillStyle = iso.currentColor;
                         iso.hoverTriangle = {x: x, y: y};
                     }
-                    
+
 
                 } else {
 
@@ -188,7 +188,7 @@ var iso = {
                         ctx.fillStyle = iso.currentColor;
                         iso.hoverTriangle = {x: x, y: y};
                     }
-                    
+
                 }
 
                 ctx.fill(path);
@@ -201,9 +201,9 @@ var iso = {
             }
 
         }
-        
+
     },
-    
+
     // Used by the color picker
     colorChange: function(color){
         iso.currentColor = '#'+color;
@@ -213,14 +213,14 @@ var iso = {
         iso.showGrid = !iso.showGrid;
         iso.render();
     },
-    
+
     // Called when the mouse moves
     updateMousePosition: function(canvas, evt){
         var rect = iso.canvas.getBoundingClientRect();
-        
+
         iso.mouseX = evt.clientX - rect.left;
         iso.mouseY = evt.clientY - rect.top;
-        
+
         // Updates the canvas
         iso.render();
     },
@@ -228,13 +228,13 @@ var iso = {
     // Paints the triangle the mouse is hovering over
     paintTriangle: function(){
         iso.colors[iso.hoverTriangle.x][iso.hoverTriangle.y] = iso.currentColor;
-        iso.updatelastUsedColors();
+        iso.updateLastUsedColors();
     },
-    
-    // Updates the colors under the colorpicker
-    updatelastUsedColors: function(){
-        
-        // removes dublicates of current color from array
+
+    // Updates the colors under the color picker
+    updateLastUsedColors: function(){
+
+        // removes duplicates of current color from array
         for(var i = 0; i < iso.lastUsedColors.length; i++){
             if(iso.lastUsedColors[i] == iso.currentColor){
                 iso.lastUsedColors.splice(i, 1);
@@ -243,59 +243,59 @@ var iso = {
         }
         // pushes the current color to array
         iso.lastUsedColors.push(iso.currentColor);
-        
+
         while (iso.usedColors.hasChildNodes()) {
             iso.usedColors.removeChild(iso.usedColors.firstChild);
         }
-        
+
         // adds the colors from array to DOM
         for(var i = 0; i < iso.lastUsedColors.length; i++){
             var colorPattle = document.createElement('div');
             colorPattle.className = 'usedColor';
             colorPattle.style.backgroundColor = iso.lastUsedColors[i];
-            
+
             colorPattle.addEventListener('click', function(e){
                 console.log(e);
                 var colorString = e.target.style.backgroundColor;
                 var match = colorString.match(/\d+/g);
-                
+
                 iso.setCurrentColor("#" + ((1 << 24) + (parseInt(match[0]) << 16) + (parseInt(match[1]) << 8) + parseInt(match[2])).toString(16).slice(1));
-                
+
             }, false);
-            
+
             iso.usedColors.appendChild(colorPattle);
         }
-        
+
         // keeps the array under 25 items
         while(iso.lastUsedColors.length>25){
             iso.lastUsedColors.splice(0,1);
         }
     },
-    
+
     setCurrentColor: function(color){
         iso.currentColor = color;
         iso.colorPicker.color.fromString(color, 0);
-        iso.updatelastUsedColors();
+        iso.updateLastUsedColors();
     },
-    
+
     fillColor: function(color, x, y){
-        var succededFields = Array(),
+        var succeededFields = Array(),
             fieldsToTest = Array();
-            
+
             fieldColor = iso.colors[x][y];
-        
+
         fieldsToTest.push({x: x, y: y});
-        
+
         while(true){
-            
+
             var tempFieldsToTest = Array();
-            
+
             for(var i = 0; i < fieldsToTest.length; i++){
                 var newFieldsToTest = Array();
-                
+
                 if(fieldsToTest[i].x<0 || fieldsToTest[i].y<0 ||
                    fieldsToTest[i].x>iso.GRID_WIDTH || fieldsToTest[i].y>iso.GRID_HEIGHT) continue;
-                
+
                 if(fieldsToTest[i].y%2==0){
                     if(fieldsToTest[i].x%2==0){
                         newFieldsToTest.push({x: fieldsToTest[i].x-1, y: fieldsToTest[i].y-1});
@@ -317,14 +317,14 @@ var iso = {
                         newFieldsToTest.push({x: fieldsToTest[i].x-1, y: fieldsToTest[i].y});
                     }
                 }
-                
+
                 for(var a = 0; a < newFieldsToTest.length; a++){
                     if(iso.colors[newFieldsToTest[a].x][newFieldsToTest[a].y] == fieldColor){
                         var alreadyAdded = false;
-                        for(var succeded = 0; succeded < succededFields.length; succeded++){
-                            
-                            if(newFieldsToTest[a].x == succededFields[succeded].x &&
-                              newFieldsToTest[a].y == succededFields[succeded].y){
+                        for(var succeeded = 0; succeeded < succeededFields.length; succeeded++){
+
+                            if(newFieldsToTest[a].x == succeededFields[succeeded].x &&
+                              newFieldsToTest[a].y == succeededFields[succeeded].y){
                                 alreadyAdded = true;
                                 break;
                             }
@@ -340,24 +340,24 @@ var iso = {
                             tempFieldsToTest.push(newFieldsToTest[a]);
                     }
                 }
-                
-                succededFields.push(fieldsToTest[i]);
+
+                succeededFields.push(fieldsToTest[i]);
                 iso.colors[fieldsToTest[i].x][fieldsToTest[i].y] = color;
             }
-            
+
             if(tempFieldsToTest.length==0) break;
-            
+
             fieldsToTest = tempFieldsToTest;
         }
-        
-        console.log(succededFields);
-        
+
+        console.log(succeededFields);
+
         iso.render();
-        
-        iso.updatelastUsedColors();
-        
+
+        iso.updateLastUsedColors();
+
     },
-    
+
     eyeDrop: function(){
         iso.setCurrentColor(iso.colors[iso.hoverTriangle.x][iso.hoverTriangle.y]);
         iso.render();
